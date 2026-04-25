@@ -9,7 +9,6 @@ export default function HomePage() {
   const router = useRouter();
   const [nickname, setNicknameInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const user = getOrCreateUser();
@@ -20,37 +19,11 @@ export default function HomePage() {
     }
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nickname.trim()) return;
-
-    setError('');
-    setLoading(true);
-
-    const user = getOrCreateUser();
-    if (!user) return;
-
-    try {
-      // 5초 타임아웃 설정
-      const timeoutPromise = new Promise<boolean>((_, reject) =>
-        setTimeout(() => reject(new Error('연결 시간 초과')), 5000)
-      );
-
-      const success = await Promise.race([
-        setNickname(user.userId, nickname.trim()),
-        timeoutPromise
-      ]);
-
-      if (success) {
-        router.push('/home');
-      } else {
-        setError('이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해주세요.');
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('닉네임 설정 에러:', err);
-      setError('Firebase 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      setLoading(false);
+    if (nickname.trim()) {
+      setNickname(nickname.trim());
+      router.push('/home');
     }
   };
 
@@ -88,34 +61,24 @@ export default function HomePage() {
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="text"
-              id="nickname"
-              value={nickname}
-              onChange={(e) => {
-                setNicknameInput(e.target.value);
-                setError(''); // 입력 시 에러 메시지 제거
-              }}
-              className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-400 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-              placeholder="닉네임을 입력하세요"
-              autoFocus
-              maxLength={20}
-              style={{ fontFamily: 'var(--font-work-sans)' }}
-            />
-            {error && (
-              <p className="text-red-500 text-xs mt-2" style={{ fontFamily: 'var(--font-work-sans)' }}>
-                {error}
-              </p>
-            )}
-          </div>
+          <input
+            type="text"
+            id="nickname"
+            value={nickname}
+            onChange={(e) => setNicknameInput(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-400 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+            placeholder="닉네임을 입력하세요"
+            autoFocus
+            maxLength={20}
+            style={{ fontFamily: 'var(--font-work-sans)' }}
+          />
           <button
             type="submit"
-            disabled={!nickname.trim() || loading}
+            disabled={!nickname.trim()}
             className="w-full bg-[#7ef66e] text-gray-800 py-3.5 rounded-full font-medium text-sm hover:bg-[#6ee55d] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
             style={{ fontFamily: 'var(--font-work-sans)' }}
           >
-            {loading ? '확인중...' : '시작하기'}
+            시작하기
           </button>
         </form>
       </div>
