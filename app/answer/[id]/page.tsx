@@ -153,25 +153,26 @@ export default function AnswerDetail() {
   };
 
   if (!currentUser || !answer) {
-    return <div className="min-h-screen flex items-center justify-center">로딩중...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>;
   }
 
   const groupedReactions = groupEmojis(reactions);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-surface py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <button
           onClick={() => router.push('/home')}
-          className="mb-6 text-blue-600 hover:text-blue-700 font-medium"
+          className="mb-6 text-primary font-bold hover:underline"
+          style={{ fontFamily: 'Work Sans' }}
         >
           ← 돌아가기
         </button>
 
         {/* 답변 카드 */}
-        <div className="bg-yellow-50 rounded-lg border-2 border-yellow-400 p-6 shadow-sm mb-6">
-          <div className="font-bold text-gray-900 mb-3 text-lg">{answer.nickname}</div>
-          <div className="text-gray-800 text-lg mb-4">{answer.text}</div>
+        <div className="bg-primary-container rounded-xl border-2 border-secondary p-6 mb-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
+          <div className="font-bold text-on-primary-container mb-3 text-lg" style={{ fontFamily: 'Work Sans' }}>{answer.nickname}</div>
+          <div className="text-on-primary-container text-lg mb-4" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
 
           {/* 답변 리액션 */}
           <div className="flex flex-wrap gap-2 items-center">
@@ -179,16 +180,17 @@ export default function AnswerDetail() {
               <button
                 key={emoji}
                 onClick={() => handleAddReaction(emoji)}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full border-2 border-secondary hover:translate-x-[1px] hover:translate-y-[1px] transition-all shadow-[2px_2px_0px_0px_rgba(93,95,87,1)] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]"
                 title={nicknames.join(', ')}
               >
-                <span>{emoji}</span>
-                <span className="text-sm text-gray-600">{nicknames.length}</span>
+                <span className="text-lg">{emoji}</span>
+                <span className="text-sm font-semibold text-on-surface" style={{ fontFamily: 'Work Sans' }}>{nicknames.length}</span>
               </button>
             ))}
             <button
               onClick={() => setShowEmojiPicker(showEmojiPicker === 'answer' ? null : 'answer')}
-              className="px-3 py-1 bg-white rounded-full border border-gray-300 hover:bg-gray-50 transition-colors text-gray-600"
+              className="px-3 py-1.5 bg-white rounded-full border-2 border-secondary hover:translate-x-[1px] hover:translate-y-[1px] transition-all text-on-surface font-bold shadow-[2px_2px_0px_0px_rgba(93,95,87,1)] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]"
+              style={{ fontFamily: 'Work Sans' }}
             >
               +
             </button>
@@ -196,13 +198,13 @@ export default function AnswerDetail() {
 
           {/* 이모지 피커 (답변) */}
           {showEmojiPicker === 'answer' && (
-            <div className="mt-3 p-3 bg-white rounded-lg border border-gray-300 shadow-lg">
+            <div className="mt-4 p-4 bg-white rounded-lg border-2 border-secondary shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]">
               <div className="grid grid-cols-6 gap-2">
                 {COMMON_EMOJIS.map(emoji => (
                   <button
                     key={emoji}
                     onClick={() => handleAddReaction(emoji)}
-                    className="text-2xl p-2 hover:bg-gray-100 rounded transition-colors"
+                    className="text-3xl p-2 hover:bg-surface-container rounded-lg transition-colors"
                   >
                     {emoji}
                   </button>
@@ -219,29 +221,30 @@ export default function AnswerDetail() {
             const groupedReplies = groupEmojis(replies);
 
             return (
-              <div key={comment.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                <div className="font-medium text-gray-900 mb-2">{comment.nickname}</div>
-                <div className="text-gray-700 mb-3">{comment.text}</div>
+              <div key={comment.id} className="bg-white rounded-lg border-2 border-secondary p-5 shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]">
+                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>{comment.nickname}</div>
+                <div className="text-on-surface mb-3" style={{ fontFamily: 'Work Sans' }}>{comment.text}</div>
 
                 {/* 대댓글 (이모지) */}
-                <div className="ml-4 border-l-2 border-black pl-3 space-y-2">
+                <div className="ml-4 border-l-2 border-secondary pl-4 space-y-2">
                   <div className="flex flex-wrap gap-2 items-center">
                     {groupedReplies.map(([emoji, nicknames]) => (
                       <button
                         key={emoji}
                         onClick={() => handleAddReply(comment.id, emoji)}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors text-sm"
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-surface-container rounded-full hover:bg-surface-container-high transition-colors text-sm border border-outline-variant"
                         title={nicknames.join(', ')}
                       >
-                        <span>{emoji}</span>
-                        <span className="text-xs text-gray-600">{nicknames.length}</span>
+                        <span className="text-base">{emoji}</span>
+                        <span className="text-xs font-semibold text-on-surface-variant" style={{ fontFamily: 'Work Sans' }}>{nicknames.length}</span>
                       </button>
                     ))}
                     <button
                       onClick={() =>
                         setShowEmojiPicker(showEmojiPicker === comment.id ? null : comment.id)
                       }
-                      className="px-2 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors text-gray-600 text-sm"
+                      className="px-2 py-1 bg-surface-container rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant text-sm font-bold border border-outline-variant"
+                      style={{ fontFamily: 'Work Sans' }}
                     >
                       +
                     </button>
@@ -249,13 +252,13 @@ export default function AnswerDetail() {
 
                   {/* 이모지 피커 (대댓글) */}
                   {showEmojiPicker === comment.id && (
-                    <div className="p-2 bg-white rounded-lg border border-gray-300 shadow-lg">
+                    <div className="p-3 bg-white rounded-lg border-2 border-secondary shadow-[2px_2px_0px_0px_rgba(93,95,87,1)]">
                       <div className="grid grid-cols-6 gap-1">
                         {COMMON_EMOJIS.map(emoji => (
                           <button
                             key={emoji}
                             onClick={() => handleAddReply(comment.id, emoji)}
-                            className="text-xl p-1 hover:bg-gray-100 rounded transition-colors"
+                            className="text-2xl p-1 hover:bg-surface-container rounded transition-colors"
                           >
                             {emoji}
                           </button>
@@ -270,21 +273,23 @@ export default function AnswerDetail() {
         </div>
 
         {/* 댓글 입력창 */}
-        <form onSubmit={handleAddComment} className="bg-white rounded-lg border border-gray-300 p-4 shadow-sm">
+        <form onSubmit={handleAddComment} className="bg-white rounded-lg border-2 border-secondary p-5 shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]">
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border-2 border-outline-variant rounded-lg focus:outline-none focus:border-primary resize-none text-on-surface"
             placeholder="댓글을 작성하세요..."
             rows={3}
             maxLength={200}
+            style={{ fontFamily: 'Work Sans' }}
           />
           <div className="flex justify-between items-center mt-3">
-            <span className="text-sm text-gray-500">{commentText.length}/200</span>
+            <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'Work Sans' }}>{commentText.length}/200</span>
             <button
               type="submit"
               disabled={!commentText.trim() || submitting}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="bg-primary text-on-primary px-6 py-2 rounded-full font-bold border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_0px_rgba(93,95,87,1)]"
+              style={{ fontFamily: 'Work Sans' }}
             >
               {submitting ? '작성중...' : '댓글 작성'}
             </button>

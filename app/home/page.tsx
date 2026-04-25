@@ -79,7 +79,7 @@ export default function Home() {
     const unsubTyping = onSnapshot(typingQuery, (snap) => {
       const typing: Record<string, TypingUser> = {};
       snap.docs.forEach(d => {
-        if (d.id !== user.userId) { // 본인 제외
+        if (d.id !== user.userId) {
           typing[d.id] = d.data() as TypingUser;
         }
       });
@@ -95,14 +95,11 @@ export default function Home() {
     };
   }, [router]);
 
-  const myAnswer = answers.find(a => a.userId === currentUser?.userId);
-
   const handleAnswerTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setAnswerText(value);
 
     if (currentUser) {
-      // 타이핑 상태 업데이트
       updateTypingStatus(currentUser.userId, currentUser.nickname, value.length > 0);
     }
   };
@@ -113,7 +110,6 @@ export default function Home() {
 
     setSubmitting(true);
     try {
-      // 타이핑 상태 제거
       clearTypingStatus(currentUser.userId);
 
       await addDoc(collection(db, 'answers'), {
@@ -131,30 +127,31 @@ export default function Home() {
     }
   };
 
-  // 타이핑 중인 사람들 목록
   const typingNicknames = Object.values(typingUsers).map(u => u.nickname);
+  const myAnswer = answers.find(a => a.userId === currentUser?.userId);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-surface">
         <div>
-          <div className="text-gray-500 mb-2">로딩중...</div>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <div className="text-on-surface-variant mb-2" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>
+          {error && <div className="text-error text-sm" style={{ fontFamily: 'Work Sans' }}>{error}</div>}
         </div>
       </div>
     );
   }
 
   if (!currentUser) {
-    return <div className="min-h-screen flex items-center justify-center">로딩중...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-surface py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="text-sm text-gray-500 mb-2">오늘의 질문</div>
-          <h1 className="text-2xl font-bold text-gray-900">
+        {/* 질문 헤더 */}
+        <div className="mb-8 bg-white border-2 border-secondary rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
+          <div className="text-xs font-bold mb-2 text-on-surface-variant uppercase tracking-wider" style={{ fontFamily: 'Work Sans' }}>오늘의 질문</div>
+          <h1 className="text-3xl text-on-surface" style={{ fontFamily: 'Gamja Flower', lineHeight: '1.2' }}>
             {question || '로딩중...'}
           </h1>
         </div>
@@ -164,35 +161,37 @@ export default function Home() {
           <div className="space-y-6">
             {/* 타이핑 인디케이터 */}
             {typingNicknames.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
+              <div className="flex items-center gap-2 text-sm text-on-surface-variant px-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
                 </div>
-                <span>
+                <span style={{ fontFamily: 'Work Sans' }}>
                   {typingNicknames.join(', ')}님이 답변 작성 중...
                 </span>
               </div>
             )}
 
-            <form onSubmit={handleSubmitAnswer} className="bg-white rounded-lg border-2 border-yellow-400 p-6 shadow-sm">
+            <form onSubmit={handleSubmitAnswer} className="bg-tertiary-container border-2 border-secondary rounded-xl p-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
               <textarea
                 value={answerText}
                 onChange={handleAnswerTextChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-white border-2 border-secondary rounded-lg focus:outline-none focus:border-primary resize-none text-on-surface"
                 placeholder="당신의 답변을 작성하세요..."
                 rows={4}
                 maxLength={500}
+                style={{ fontFamily: 'Work Sans' }}
               />
               <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'Work Sans' }}>
                   {answerText.length}/500
                 </span>
                 <button
                   type="submit"
                   disabled={!answerText.trim() || submitting}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]"
+                  style={{ fontFamily: 'Work Sans' }}
                 >
                   {submitting ? '제출중...' : '답변하기'}
                 </button>
@@ -201,14 +200,14 @@ export default function Home() {
 
             {answers.length > 0 && (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">
+                <p className="text-on-surface-variant mb-6 font-semibold" style={{ fontFamily: 'Work Sans' }}>
                   {answers.length}명이 이미 답했어요
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {answers.map(answer => (
-                    <div key={answer.id} className="bg-white rounded-lg p-6 blur-sm select-none">
-                      <div className="font-medium text-gray-900 mb-2">{answer.nickname}</div>
-                      <div className="text-gray-700">{answer.text}</div>
+                    <div key={answer.id} className="bg-surface-container-high rounded-lg p-6 blur-sm select-none border-2 border-outline-variant">
+                      <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>{answer.nickname}</div>
+                      <div className="text-on-surface-variant" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
                     </div>
                   ))}
                 </div>
@@ -218,24 +217,26 @@ export default function Home() {
         ) : (
           // 답변 리스트
           <div className="space-y-4">
-            <div className="text-sm text-gray-500 mb-4">
+            <div className="text-sm text-on-surface-variant mb-4 font-semibold" style={{ fontFamily: 'Work Sans' }}>
               {answers.length}개의 답변
             </div>
             {answers.map(answer => (
               <div
                 key={answer.id}
                 onClick={() => router.push(`/answer/${answer.id}`)}
-                className={`bg-white rounded-lg p-6 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${
-                  answer.userId === currentUser.userId ? 'border-2 border-blue-400' : 'border border-gray-200'
+                className={`bg-white rounded-lg p-6 cursor-pointer transition-all border-2 ${
+                  answer.userId === currentUser.userId
+                    ? 'border-primary shadow-[4px_4px_0px_0px_rgba(0,110,2,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,110,2,1)]'
+                    : 'border-secondary shadow-[3px_3px_0px_0px_rgba(93,95,87,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]'
                 }`}
               >
-                <div className="font-medium text-gray-900 mb-2">
+                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>
                   {answer.nickname}
                   {answer.userId === currentUser.userId && (
-                    <span className="ml-2 text-sm text-blue-600">(나)</span>
+                    <span className="ml-2 text-sm text-primary font-normal">(나)</span>
                   )}
                 </div>
-                <div className="text-gray-700">{answer.text}</div>
+                <div className="text-on-surface" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
               </div>
             ))}
           </div>
