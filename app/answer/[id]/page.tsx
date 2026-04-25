@@ -193,7 +193,7 @@ export default function AnswerDetail() {
       <div className="max-w-2xl mx-auto">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push('/home')}
           className="mb-6 text-gray-600 hover:text-gray-800 cursor-pointer"
           style={{ fontFamily: 'var(--font-work-sans)' }}
         >

@@ -83,7 +83,7 @@ export default function WritePage() {
         {/* 뒤로 가기 버튼 */}
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push('/home')}
           className="mb-6 text-gray-600 hover:text-gray-800 cursor-pointer"
           style={{ fontFamily: 'var(--font-work-sans)' }}
         >
