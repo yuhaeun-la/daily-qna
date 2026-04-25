@@ -134,15 +134,15 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
         <div>
-          <div className="text-on-surface-variant mb-2" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>
-          {error && <div className="text-error text-sm" style={{ fontFamily: 'Work Sans' }}>{error}</div>}
+          <div className="text-on-surface-variant mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>로딩중...</div>
+          {error && <div className="text-error text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>{error}</div>}
         </div>
       </div>
     );
   }
 
   if (!currentUser) {
-    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>로딩중...</div>;
   }
 
   return (
@@ -150,8 +150,8 @@ export default function Home() {
       <div className="max-w-2xl mx-auto">
         {/* 질문 헤더 */}
         <div className="mb-8 bg-white border-2 border-secondary rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
-          <div className="text-xs font-bold mb-2 text-on-surface-variant uppercase tracking-wider" style={{ fontFamily: 'Work Sans' }}>오늘의 질문</div>
-          <h1 className="text-3xl text-on-surface" style={{ fontFamily: 'Gamja Flower', lineHeight: '1.2' }}>
+          <div className="text-xs font-bold mb-2 text-on-surface-variant uppercase tracking-wider" style={{ fontFamily: 'var(--font-work-sans)' }}>오늘의 질문</div>
+          <h1 className="text-3xl text-on-surface" style={{ fontFamily: 'var(--font-gamja-flower)', lineHeight: '1.2' }}>
             {question || '로딩중...'}
           </h1>
         </div>
@@ -167,7 +167,7 @@ export default function Home() {
                   <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
                   <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
                 </div>
-                <span style={{ fontFamily: 'Work Sans' }}>
+                <span style={{ fontFamily: 'var(--font-work-sans)' }}>
                   {typingNicknames.join(', ')}님이 답변 작성 중...
                 </span>
               </div>
@@ -181,17 +181,17 @@ export default function Home() {
                 placeholder="당신의 답변을 작성하세요..."
                 rows={4}
                 maxLength={500}
-                style={{ fontFamily: 'Work Sans' }}
+                style={{ fontFamily: 'var(--font-work-sans)' }}
               />
               <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'Work Sans' }}>
+                <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
                   {answerText.length}/500
                 </span>
                 <button
                   type="submit"
                   disabled={!answerText.trim() || submitting}
                   className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]"
-                  style={{ fontFamily: 'Work Sans' }}
+                  style={{ fontFamily: 'var(--font-work-sans)' }}
                 >
                   {submitting ? '제출중...' : '답변하기'}
                 </button>
@@ -200,14 +200,14 @@ export default function Home() {
 
             {answers.length > 0 && (
               <div className="text-center py-8">
-                <p className="text-on-surface-variant mb-6 font-semibold" style={{ fontFamily: 'Work Sans' }}>
+                <p className="text-on-surface-variant mb-6 font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
                   {answers.length}명이 이미 답했어요
                 </p>
                 <div className="space-y-4">
                   {answers.map(answer => (
                     <div key={answer.id} className="bg-surface-container-high rounded-lg p-6 blur-sm select-none border-2 border-outline-variant">
-                      <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>{answer.nickname}</div>
-                      <div className="text-on-surface-variant" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
+                      <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.nickname}</div>
+                      <div className="text-on-surface-variant" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.text}</div>
                     </div>
                   ))}
                 </div>
@@ -217,7 +217,7 @@ export default function Home() {
         ) : (
           // 답변 리스트
           <div className="space-y-4">
-            <div className="text-sm text-on-surface-variant mb-4 font-semibold" style={{ fontFamily: 'Work Sans' }}>
+            <div className="text-sm text-on-surface-variant mb-4 font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
               {answers.length}개의 답변
             </div>
             {answers.map(answer => (
@@ -230,13 +230,13 @@ export default function Home() {
                     : 'border-secondary shadow-[3px_3px_0px_0px_rgba(93,95,87,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]'
                 }`}
               >
-                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>
+                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>
                   {answer.nickname}
                   {answer.userId === currentUser.userId && (
                     <span className="ml-2 text-sm text-primary font-normal">(나)</span>
                   )}
                 </div>
-                <div className="text-on-surface" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
+                <div className="text-on-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.text}</div>
               </div>
             ))}
           </div>

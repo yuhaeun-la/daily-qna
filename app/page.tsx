@@ -37,7 +37,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-4">
       <div className="max-w-md w-full">
-        <h1 className="text-5xl font-display text-center mb-12 text-on-surface" style={{ fontFamily: 'Gamja Flower' }}>
+        <h1 className="text-5xl font-display text-center mb-12 text-on-surface" style={{ fontFamily: 'var(--font-gamja-flower)' }}>
           일일 문답
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -54,14 +54,14 @@ export default function HomePage() {
               placeholder="예: 지혜"
               autoFocus
               maxLength={20}
-              style={{ fontFamily: 'Work Sans' }}
+              style={{ fontFamily: 'var(--font-work-sans)' }}
             />
           </div>
           <button
             type="submit"
             disabled={!nickname.trim()}
             className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-body font-bold text-lg border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]"
-            style={{ fontFamily: 'Work Sans' }}
+            style={{ fontFamily: 'var(--font-work-sans)' }}
           >
             시작하기
           </button>

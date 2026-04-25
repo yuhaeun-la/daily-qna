@@ -153,7 +153,7 @@ export default function AnswerDetail() {
   };
 
   if (!currentUser || !answer) {
-    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'Work Sans' }}>로딩중...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>로딩중...</div>;
   }
 
   const groupedReactions = groupEmojis(reactions);
@@ -164,15 +164,15 @@ export default function AnswerDetail() {
         <button
           onClick={() => router.push('/home')}
           className="mb-6 text-primary font-bold hover:underline"
-          style={{ fontFamily: 'Work Sans' }}
+          style={{ fontFamily: 'var(--font-work-sans)' }}
         >
           ← 돌아가기
         </button>
 
         {/* 답변 카드 */}
         <div className="bg-primary-container rounded-xl border-2 border-secondary p-6 mb-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
-          <div className="font-bold text-on-primary-container mb-3 text-lg" style={{ fontFamily: 'Work Sans' }}>{answer.nickname}</div>
-          <div className="text-on-primary-container text-lg mb-4" style={{ fontFamily: 'Work Sans' }}>{answer.text}</div>
+          <div className="font-bold text-on-primary-container mb-3 text-lg" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.nickname}</div>
+          <div className="text-on-primary-container text-lg mb-4" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.text}</div>
 
           {/* 답변 리액션 */}
           <div className="flex flex-wrap gap-2 items-center">
@@ -184,13 +184,13 @@ export default function AnswerDetail() {
                 title={nicknames.join(', ')}
               >
                 <span className="text-lg">{emoji}</span>
-                <span className="text-sm font-semibold text-on-surface" style={{ fontFamily: 'Work Sans' }}>{nicknames.length}</span>
+                <span className="text-sm font-semibold text-on-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>{nicknames.length}</span>
               </button>
             ))}
             <button
               onClick={() => setShowEmojiPicker(showEmojiPicker === 'answer' ? null : 'answer')}
               className="px-3 py-1.5 bg-white rounded-full border-2 border-secondary hover:translate-x-[1px] hover:translate-y-[1px] transition-all text-on-surface font-bold shadow-[2px_2px_0px_0px_rgba(93,95,87,1)] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]"
-              style={{ fontFamily: 'Work Sans' }}
+              style={{ fontFamily: 'var(--font-work-sans)' }}
             >
               +
             </button>
@@ -222,8 +222,8 @@ export default function AnswerDetail() {
 
             return (
               <div key={comment.id} className="bg-white rounded-lg border-2 border-secondary p-5 shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]">
-                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'Work Sans' }}>{comment.nickname}</div>
-                <div className="text-on-surface mb-3" style={{ fontFamily: 'Work Sans' }}>{comment.text}</div>
+                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>{comment.nickname}</div>
+                <div className="text-on-surface mb-3" style={{ fontFamily: 'var(--font-work-sans)' }}>{comment.text}</div>
 
                 {/* 대댓글 (이모지) */}
                 <div className="ml-4 border-l-2 border-secondary pl-4 space-y-2">
@@ -236,7 +236,7 @@ export default function AnswerDetail() {
                         title={nicknames.join(', ')}
                       >
                         <span className="text-base">{emoji}</span>
-                        <span className="text-xs font-semibold text-on-surface-variant" style={{ fontFamily: 'Work Sans' }}>{nicknames.length}</span>
+                        <span className="text-xs font-semibold text-on-surface-variant" style={{ fontFamily: 'var(--font-work-sans)' }}>{nicknames.length}</span>
                       </button>
                     ))}
                     <button
@@ -244,7 +244,7 @@ export default function AnswerDetail() {
                         setShowEmojiPicker(showEmojiPicker === comment.id ? null : comment.id)
                       }
                       className="px-2 py-1 bg-surface-container rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant text-sm font-bold border border-outline-variant"
-                      style={{ fontFamily: 'Work Sans' }}
+                      style={{ fontFamily: 'var(--font-work-sans)' }}
                     >
                       +
                     </button>
@@ -281,15 +281,15 @@ export default function AnswerDetail() {
             placeholder="댓글을 작성하세요..."
             rows={3}
             maxLength={200}
-            style={{ fontFamily: 'Work Sans' }}
+            style={{ fontFamily: 'var(--font-work-sans)' }}
           />
           <div className="flex justify-between items-center mt-3">
-            <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'Work Sans' }}>{commentText.length}/200</span>
+            <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>{commentText.length}/200</span>
             <button
               type="submit"
               disabled={!commentText.trim() || submitting}
               className="bg-primary text-on-primary px-6 py-2 rounded-full font-bold border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_0px_rgba(93,95,87,1)]"
-              style={{ fontFamily: 'Work Sans' }}
+              style={{ fontFamily: 'var(--font-work-sans)' }}
             >
               {submitting ? '작성중...' : '댓글 작성'}
             </button>

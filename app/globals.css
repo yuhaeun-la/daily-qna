@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Work+Sans:wght@400;600;700&display=swap');
 
 @theme inline {
   /* Colors - Serious Wit Design System */
@@ -29,10 +28,6 @@
   --color-outline: #6f7a69;
   --color-outline-variant: #becab6;
 
-  /* Typography */
-  --font-display: "Gamja Flower", cursive;
-  --font-body: "Work Sans", sans-serif;
-
   /* Spacing (8px base) */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -53,7 +48,7 @@
 body {
   background: #f9fbed;
   color: #1a1d14;
-  font-family: "Work Sans", sans-serif;
+  font-family: var(--font-work-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
