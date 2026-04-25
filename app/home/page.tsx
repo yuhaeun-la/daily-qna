@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { getOrCreateUser } from '@/lib/user';
-import { updateTypingStatus, clearTypingStatus } from '@/lib/typing';
+import Image from 'next/image';
 
 interface Answer {
   id: string;
@@ -15,24 +15,17 @@ interface Answer {
   createdAt: any;
 }
 
-interface TypingUser {
-  nickname: string;
-  updatedAt: any;
-}
-
 export default function Home() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<{ userId: string; nickname: string } | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [answerText, setAnswerText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [typingUsers, setTypingUsers] = useState<Record<string, TypingUser>>({});
 
   useEffect(() => {
     const user = getOrCreateUser();
+    console.log('👤 현재 사용자:', user);
     if (!user?.nickname) {
       router.push('/');
       return;
@@ -51,91 +44,56 @@ export default function Home() {
       } catch (err) {
         console.error('질문 로드 실패:', err);
         setError('질문을 불러오는데 실패했습니다.');
+        setLoading(false); // 에러 발생 시에도 로딩 해제
       }
     };
     fetchQuestion();
+
+    // 타임아웃으로 무한 로딩 방지
+    const loadingTimeout = setTimeout(() => {
+      console.warn('로딩 타임아웃');
+      setLoading(false);
+    }, 5000);
 
     // 답변 실시간 구독
     const q = query(collection(db, 'answers'), orderBy('createdAt', 'desc'));
     const unsubAnswers = onSnapshot(
       q,
       (snap) => {
+        console.log('📝 답변 개수:', snap.docs.length);
         const answersList = snap.docs.map(d => ({
           id: d.id,
           ...d.data()
         } as Answer));
         setAnswers(answersList);
         setLoading(false);
+        clearTimeout(loadingTimeout);
       },
       (err) => {
-        console.error('답변 구독 실패:', err);
-        setError('답변을 불러오는데 실패했습니다.');
+        console.error('❌ 답변 구독 실패:', err);
+        setError('답변을 불러오는데 실패했습니다: ' + err.message);
         setLoading(false);
+        clearTimeout(loadingTimeout);
       }
     );
 
-    // 타이핑 상태 실시간 구독
-    const typingQuery = query(collection(db, 'typing'));
-    const unsubTyping = onSnapshot(typingQuery, (snap) => {
-      const typing: Record<string, TypingUser> = {};
-      snap.docs.forEach(d => {
-        if (d.id !== user.userId) {
-          typing[d.id] = d.data() as TypingUser;
-        }
-      });
-      setTypingUsers(typing);
-    });
-
     return () => {
+      clearTimeout(loadingTimeout);
       unsubAnswers();
-      unsubTyping();
-      if (user?.userId) {
-        clearTypingStatus(user.userId);
-      }
     };
   }, [router]);
 
-  const handleAnswerTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setAnswerText(value);
-
-    if (currentUser) {
-      updateTypingStatus(currentUser.userId, currentUser.nickname, value.length > 0);
-    }
-  };
-
-  const handleSubmitAnswer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!answerText.trim() || !currentUser) return;
-
-    setSubmitting(true);
-    try {
-      clearTypingStatus(currentUser.userId);
-
-      await addDoc(collection(db, 'answers'), {
-        userId: currentUser.userId,
-        nickname: currentUser.nickname,
-        text: answerText.trim(),
-        createdAt: serverTimestamp(),
-      });
-      setAnswerText('');
-    } catch (error) {
-      console.error('답변 제출 실패:', error);
-      alert('답변 제출에 실패했습니다.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const typingNicknames = Object.values(typingUsers).map(u => u.nickname);
   const myAnswer = answers.find(a => a.userId === currentUser?.userId);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
-        <div>
+        <div className="text-center">
           <div className="text-on-surface-variant mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>로딩중...</div>
-          {error && <div className="text-error text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>{error}</div>}
+          {error && <div className="text-error text-sm mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>{error}</div>}
+          <div className="text-xs text-on-surface-variant mt-4" style={{ fontFamily: 'var(--font-work-sans)' }}>
+            Firebase 연결 중... (5초 후 자동 진행)
+          </div>
         </div>
       </div>
     );
@@ -145,100 +103,103 @@ export default function Home() {
     return <div className="min-h-screen flex items-center justify-center bg-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>로딩중...</div>;
   }
 
+  // Get character color based on user ID
+  const getCharacterColor = (userId: string): 'purple' | 'green' | 'blue' => {
+    const colors: ('purple' | 'green' | 'blue')[] = ['purple', 'green', 'blue'];
+    const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
+  const totalUsers = 3; // Total expected users for the demo
+
   return (
-    <div className="min-h-screen bg-surface py-8 px-4">
+    <div className="min-h-screen bg-[#f9fbed] py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* 질문 헤더 */}
-        <div className="mb-8 bg-white border-2 border-secondary rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
-          <div className="text-xs font-bold mb-2 text-on-surface-variant uppercase tracking-wider" style={{ fontFamily: 'var(--font-work-sans)' }}>오늘의 질문</div>
-          <h1 className="text-3xl text-on-surface" style={{ fontFamily: 'var(--font-gamja-flower)', lineHeight: '1.2' }}>
+        <div className="mb-6 bg-white border-2 border-black rounded-3xl p-8 relative">
+          <div className="absolute -top-3 left-6 bg-[#7ef66e] border-2 border-black rounded-full px-4 py-1">
+            <span className="text-sm font-bold" style={{ fontFamily: 'var(--font-work-sans)' }}>오늘의 질문!</span>
+          </div>
+          <h1 className="text-2xl text-on-surface mt-2" style={{ fontFamily: 'var(--font-gamja-flower)', lineHeight: '1.4' }}>
             {question || '로딩중...'}
           </h1>
         </div>
 
         {!myAnswer ? (
-          // 답변 작성 폼
-          <div className="space-y-6">
-            {/* 타이핑 인디케이터 */}
-            {typingNicknames.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-on-surface-variant px-2">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
-                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                  <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                </div>
-                <span style={{ fontFamily: 'var(--font-work-sans)' }}>
-                  {typingNicknames.join(', ')}님이 답변 작성 중...
-                </span>
-              </div>
-            )}
+          // 답변 작성 전 - 캐릭터 아바타와 버튼 표시
+          <div className="space-y-6 flex flex-col items-center">
+            {/* 캐릭터 아바타들 */}
+            <div className="flex gap-4 justify-center">
+              {Array.from({ length: totalUsers }).map((_, idx) => {
+                const answer = answers[idx];
+                const isAnswered = !!answer;
+                const characterColor = answer ? getCharacterColor(answer.userId) : 'purple';
 
-            <form onSubmit={handleSubmitAnswer} className="bg-tertiary-container border-2 border-secondary rounded-xl p-6 shadow-[4px_4px_0px_0px_rgba(93,95,87,1)]">
-              <textarea
-                value={answerText}
-                onChange={handleAnswerTextChange}
-                className="w-full px-4 py-3 bg-white border-2 border-secondary rounded-lg focus:outline-none focus:border-primary resize-none text-on-surface"
-                placeholder="당신의 답변을 작성하세요..."
-                rows={4}
-                maxLength={500}
-                style={{ fontFamily: 'var(--font-work-sans)' }}
-              />
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-sm text-on-surface-variant font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
-                  {answerText.length}/500
-                </span>
-                <button
-                  type="submit"
-                  disabled={!answerText.trim() || submitting}
-                  className="bg-primary text-on-primary px-8 py-3 rounded-full font-bold border-2 border-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]"
-                  style={{ fontFamily: 'var(--font-work-sans)' }}
-                >
-                  {submitting ? '제출중...' : '답변하기'}
-                </button>
-              </div>
-            </form>
+                return (
+                  <div key={idx} className="flex flex-col items-center">
+                    <Image
+                      src={isAnswered ? `/characters/${characterColor}.png` : '/characters/purple.png'}
+                      alt={`Character ${idx + 1}`}
+                      width={80}
+                      height={80}
+                      className={`object-contain ${!isAnswered ? 'opacity-30 grayscale' : ''}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
 
-            {answers.length > 0 && (
-              <div className="text-center py-8">
-                <p className="text-on-surface-variant mb-6 font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
-                  {answers.length}명이 이미 답했어요
-                </p>
-                <div className="space-y-4">
-                  {answers.map(answer => (
-                    <div key={answer.id} className="bg-surface-container-high rounded-lg p-6 blur-sm select-none border-2 border-outline-variant">
-                      <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.nickname}</div>
-                      <div className="text-on-surface-variant" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.text}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* 답변 카운터 */}
+            <p className="text-gray-600 text-lg" style={{ fontFamily: 'var(--font-gamja-flower)' }}>
+              {answers.length}/{totalUsers}명이 답했어요
+            </p>
+
+            {/* 답변하기 버튼 */}
+            <button
+              onClick={() => router.push('/write')}
+              className="bg-[#7ef66e] text-gray-800 px-16 py-4 rounded-full font-bold text-lg hover:bg-[#6ee55d] transition-all border-2 border-black"
+              style={{ fontFamily: 'var(--font-gamja-flower)' }}
+            >
+              나도 답변하기
+            </button>
           </div>
         ) : (
           // 답변 리스트
           <div className="space-y-4">
-            <div className="text-sm text-on-surface-variant mb-4 font-semibold" style={{ fontFamily: 'var(--font-work-sans)' }}>
-              {answers.length}개의 답변
-            </div>
-            {answers.map(answer => (
-              <div
-                key={answer.id}
-                onClick={() => router.push(`/answer/${answer.id}`)}
-                className={`bg-white rounded-lg p-6 cursor-pointer transition-all border-2 ${
-                  answer.userId === currentUser.userId
-                    ? 'border-primary shadow-[4px_4px_0px_0px_rgba(0,110,2,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,110,2,1)]'
-                    : 'border-secondary shadow-[3px_3px_0px_0px_rgba(93,95,87,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0px_0px_rgba(93,95,87,1)]'
-                }`}
-              >
-                <div className="font-bold text-on-surface mb-2" style={{ fontFamily: 'var(--font-work-sans)' }}>
-                  {answer.nickname}
-                  {answer.userId === currentUser.userId && (
-                    <span className="ml-2 text-sm text-primary font-normal">(나)</span>
-                  )}
+            {answers.map(answer => {
+              const characterColor = getCharacterColor(answer.userId);
+              const isMyAnswer = answer.userId === currentUser.userId;
+
+              return (
+                <div
+                  key={answer.id}
+                  onClick={() => router.push(`/answer/${answer.id}`)}
+                  className="bg-white rounded-3xl p-6 cursor-pointer transition-all border-2 border-black hover:shadow-lg"
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <Image
+                      src={`/characters/${characterColor}.png`}
+                      alt={answer.nickname}
+                      width={40}
+                      height={40}
+                      className="object-contain"
+                    />
+                    <div className="font-bold text-on-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                      {answer.nickname}
+                      {isMyAnswer && (
+                        <span className="ml-2 text-sm text-gray-500 font-normal">(나)</span>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`text-on-surface pl-2 ${isMyAnswer ? 'border-l-4 border-[#7ef66e]' : ''}`}
+                    style={{ fontFamily: 'var(--font-gamja-flower)', fontSize: '16px', lineHeight: '1.6' }}
+                  >
+                    {answer.text}
+                  </div>
                 </div>
-                <div className="text-on-surface" style={{ fontFamily: 'var(--font-work-sans)' }}>{answer.text}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

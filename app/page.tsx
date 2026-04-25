@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateUser, setNickname } from '@/lib/user';
+import Image from 'next/image';
 
 export default function HomePage() {
   const router = useRouter();
   const [nickname, setNicknameInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const user = getOrCreateUser();
@@ -18,11 +20,23 @@ export default function HomePage() {
     }
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nickname.trim()) {
-      setNickname(nickname.trim());
+    if (!nickname.trim()) return;
+
+    setError('');
+    setLoading(true);
+
+    const user = getOrCreateUser();
+    if (!user) return;
+
+    const success = await setNickname(user.userId, nickname.trim());
+
+    if (success) {
       router.push('/home');
+    } else {
+      setError('이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해주세요.');
+      setLoading(false);
     }
   };
 
@@ -36,42 +50,58 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-4">
-      <div className="max-w-md w-full bg-white border-2 border-secondary rounded-2xl p-10 shadow-[3px_3px_0px_0px_rgba(93,95,87,1)]">
-        {/* 아이콘 */}
+      <div className="w-full max-w-sm min-w-[320px] bg-white/80 backdrop-blur-sm border border-gray-200 rounded-3xl px-10 py-14">
+        {/* 로고 */}
         <div className="flex justify-center mb-6">
-          <div className="text-6xl">👋</div>
+          <Image
+            src="/logo.png"
+            alt="OOTQ Logo"
+            width={70}
+            height={70}
+            className="object-contain"
+          />
         </div>
 
         {/* 타이틀 */}
-        <h1 className="text-4xl text-center mb-3 text-on-surface leading-tight" style={{ fontFamily: 'var(--font-gamja-flower)' }}>
-          반가워요! 당신의<br />이름은?
+        <h1 className="text-3xl text-center mb-2 text-on-surface leading-tight" style={{ fontFamily: 'var(--font-gamja-flower)' }}>
+          반가워요!<br />당신의 이름은?
         </h1>
 
         {/* 서브텍스트 */}
-        <p className="text-center text-on-surface-variant mb-8 text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>
-          Haru에서 사용할 닉네임을 알려주세요.
+        <p className="text-center text-gray-600 mb-8 text-xs" style={{ fontFamily: 'var(--font-work-sans)' }}>
+          OOTQ에서 사용할 닉네임을 알려주세요.
         </p>
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            id="nickname"
-            value={nickname}
-            onChange={(e) => setNicknameInput(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-outline-variant rounded-lg text-on-surface-variant focus:outline-none focus:border-primary transition-colors text-sm"
-            placeholder="닉네임을 입력하세요"
-            autoFocus
-            maxLength={20}
-            style={{ fontFamily: 'var(--font-work-sans)' }}
-          />
+          <div>
+            <input
+              type="text"
+              id="nickname"
+              value={nickname}
+              onChange={(e) => {
+                setNicknameInput(e.target.value);
+                setError(''); // 입력 시 에러 메시지 제거
+              }}
+              className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-400 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+              placeholder="닉네임을 입력하세요"
+              autoFocus
+              maxLength={20}
+              style={{ fontFamily: 'var(--font-work-sans)' }}
+            />
+            {error && (
+              <p className="text-red-500 text-xs mt-2" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                {error}
+              </p>
+            )}
+          </div>
           <button
             type="submit"
-            disabled={!nickname.trim()}
-            className="w-full bg-primary-container text-on-primary-container py-3.5 rounded-full font-bold text-base hover:opacity-90 disabled:bg-surface-dim disabled:text-on-surface-variant disabled:cursor-not-allowed transition-all"
+            disabled={!nickname.trim() || loading}
+            className="w-full bg-[#7ef66e] text-gray-800 py-3.5 rounded-full font-medium text-sm hover:bg-[#6ee55d] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
             style={{ fontFamily: 'var(--font-work-sans)' }}
           >
-            시작하기
+            {loading ? '확인중...' : '시작하기'}
           </button>
         </form>
       </div>
