@@ -21,6 +21,8 @@ export default function Home() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const user = getOrCreateUser();
@@ -32,22 +34,38 @@ export default function Home() {
 
     // 오늘의 질문 가져오기
     const fetchQuestion = async () => {
-      const questionDoc = await getDoc(doc(db, 'todayQuestion', 'current'));
-      if (questionDoc.exists()) {
-        setQuestion(questionDoc.data().text);
+      try {
+        const questionDoc = await getDoc(doc(db, 'todayQuestion', 'current'));
+        if (questionDoc.exists()) {
+          setQuestion(questionDoc.data().text);
+        } else {
+          setQuestion('오늘의 질문을 불러올 수 없습니다.');
+        }
+      } catch (err) {
+        console.error('질문 로드 실패:', err);
+        setError('질문을 불러오는데 실패했습니다.');
       }
     };
     fetchQuestion();
 
     // 답변 실시간 구독
     const q = query(collection(db, 'answers'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
-      const answersList = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      } as Answer));
-      setAnswers(answersList);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const answersList = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        } as Answer));
+        setAnswers(answersList);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('답변 구독 실패:', err);
+        setError('답변을 불러오는데 실패했습니다.');
+        setLoading(false);
+      }
+    );
 
     return () => unsub();
   }, [router]);
@@ -74,6 +92,17 @@ export default function Home() {
       setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>
+          <div className="text-gray-500 mb-2">로딩중...</div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <div className="min-h-screen flex items-center justify-center">로딩중...</div>;
