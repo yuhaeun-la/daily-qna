@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getOrCreateUser } from '@/lib/user';
+import { updateTypingStatus, clearTypingStatus } from '@/lib/typing';
 
 interface Answer {
   id: string;
@@ -12,6 +13,11 @@ interface Answer {
   nickname: string;
   text: string;
   createdAt: any;
+}
+
+interface TypingUser {
+  nickname: string;
+  updatedAt: any;
 }
 
 export default function Home() {
@@ -23,6 +29,7 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [typingUsers, setTypingUsers] = useState<Record<string, TypingUser>>({});
 
   useEffect(() => {
     const user = getOrCreateUser();
@@ -50,7 +57,7 @@ export default function Home() {
 
     // 답변 실시간 구독
     const q = query(collection(db, 'answers'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(
+    const unsubAnswers = onSnapshot(
       q,
       (snap) => {
         const answersList = snap.docs.map(d => ({
@@ -67,10 +74,38 @@ export default function Home() {
       }
     );
 
-    return () => unsub();
+    // 타이핑 상태 실시간 구독
+    const typingQuery = query(collection(db, 'typing'));
+    const unsubTyping = onSnapshot(typingQuery, (snap) => {
+      const typing: Record<string, TypingUser> = {};
+      snap.docs.forEach(d => {
+        if (d.id !== user.userId) { // 본인 제외
+          typing[d.id] = d.data() as TypingUser;
+        }
+      });
+      setTypingUsers(typing);
+    });
+
+    return () => {
+      unsubAnswers();
+      unsubTyping();
+      if (user?.userId) {
+        clearTypingStatus(user.userId);
+      }
+    };
   }, [router]);
 
   const myAnswer = answers.find(a => a.userId === currentUser?.userId);
+
+  const handleAnswerTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setAnswerText(value);
+
+    if (currentUser) {
+      // 타이핑 상태 업데이트
+      updateTypingStatus(currentUser.userId, currentUser.nickname, value.length > 0);
+    }
+  };
 
   const handleSubmitAnswer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +113,9 @@ export default function Home() {
 
     setSubmitting(true);
     try {
+      // 타이핑 상태 제거
+      clearTypingStatus(currentUser.userId);
+
       await addDoc(collection(db, 'answers'), {
         userId: currentUser.userId,
         nickname: currentUser.nickname,
@@ -92,6 +130,9 @@ export default function Home() {
       setSubmitting(false);
     }
   };
+
+  // 타이핑 중인 사람들 목록
+  const typingNicknames = Object.values(typingUsers).map(u => u.nickname);
 
   if (loading) {
     return (
@@ -121,10 +162,24 @@ export default function Home() {
         {!myAnswer ? (
           // 답변 작성 폼
           <div className="space-y-6">
+            {/* 타이핑 인디케이터 */}
+            {typingNicknames.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                </div>
+                <span>
+                  {typingNicknames.join(', ')}님이 답변 작성 중...
+                </span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmitAnswer} className="bg-white rounded-lg border-2 border-yellow-400 p-6 shadow-sm">
               <textarea
                 value={answerText}
-                onChange={(e) => setAnswerText(e.target.value)}
+                onChange={handleAnswerTextChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="당신의 답변을 작성하세요..."
                 rows={4}
