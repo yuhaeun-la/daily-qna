@@ -30,12 +30,26 @@ export default function HomePage() {
     const user = getOrCreateUser();
     if (!user) return;
 
-    const success = await setNickname(user.userId, nickname.trim());
+    try {
+      // 5초 타임아웃 설정
+      const timeoutPromise = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('연결 시간 초과')), 5000)
+      );
 
-    if (success) {
-      router.push('/home');
-    } else {
-      setError('이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해주세요.');
+      const success = await Promise.race([
+        setNickname(user.userId, nickname.trim()),
+        timeoutPromise
+      ]);
+
+      if (success) {
+        router.push('/home');
+      } else {
+        setError('이미 사용 중인 닉네임입니다. 다른 닉네임을 선택해주세요.');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('닉네임 설정 에러:', err);
+      setError('Firebase 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
       setLoading(false);
     }
   };

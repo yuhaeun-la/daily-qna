@@ -49,11 +49,12 @@ export default function Home() {
     };
     fetchQuestion();
 
-    // 타임아웃으로 무한 로딩 방지
+    // 타임아웃으로 무한 로딩 방지 (3초로 단축)
     const loadingTimeout = setTimeout(() => {
-      console.warn('로딩 타임아웃');
+      console.warn('⏰ Firebase 연결 타임아웃');
+      setError('Firebase 연결이 느립니다. Firestore 규칙을 확인해주세요.');
       setLoading(false);
-    }, 5000);
+    }, 3000);
 
     // 답변 실시간 구독
     const q = query(collection(db, 'answers'), orderBy('createdAt', 'desc'));
